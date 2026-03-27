@@ -95,6 +95,34 @@ void liberar_lista(ErrorLog *cabeza)
 void insertar_ordenado(ErrorLog **cabeza, ErrorLog *nuevo)
 {
     /* ESCRIBE TU CODIGO AQUI */
+    if(*cabeza==NULL){
+        *cabeza = nuevo;
+        return;
+    }
+    ErrorLog*actual=*cabeza;
+    ErrorLog*anterior=NULL;
+
+    while(actual!=NULL){
+        char letra_actual=actual->id[0];
+        char letra_nuevo=nuevo->id[0];
+        if(letra_nuevo<letra_actual)
+            break;
+        if(letra_nuevo==letra_actual && nuevo->prioridad>actual->prioridad)
+            break;
+        anterior=actual;
+        actual=actual->sig;
+
+    }
+
+    if (anterior == NULL){
+        nuevo -> sig = *cabeza;
+        *cabeza = nuevo;
+
+    }else{
+        nuevo -> sig = actual;
+        anterior -> sig = nuevo;
+    }
+
 }
 
 /*
@@ -105,7 +133,13 @@ void insertar_ordenado(ErrorLog **cabeza, ErrorLog *nuevo)
 int contar_criticos(ErrorLog *cabeza)
 {
     /* ESCRIBE TU CODIGO AQUI */
-    return 0;
+    int cnt=0;
+    while(cabeza!=NULL){
+        if(cabeza->es_critico)
+            cnt++;
+        cabeza=cabeza->sig;
+    }
+    return cnt;
 }
 
 /*
@@ -115,8 +149,13 @@ int contar_criticos(ErrorLog *cabeza)
  */
 int contar_no_criticos(ErrorLog *cabeza)
 {
-    /* ESCRIBE TU CODIGO AQUI */
-    return 0;
+    int cnt=0;
+    while(cabeza!=NULL){
+        if(!cabeza->es_critico)
+        cnt++;
+        cabeza=cabeza->sig;
+    }
+    return cnt;
 }
 
 /*
@@ -130,6 +169,24 @@ int contar_no_criticos(ErrorLog *cabeza)
 ErrorLog *eliminar_por_prioridad(ErrorLog *cabeza, float umbral)
 {
     /* ESCRIBE TU CODIGO AQUI */
+    ErrorLog *actual = cabeza;
+    ErrorLog *anterior = NULL;
+
+    while (actual != NULL){
+            if (actual->prioridad<umbral){
+                ErrorLog *tmp=actual;
+            if(anterior==NULL){
+                cabeza=actual->sig;
+            }else{
+                anterior->sig=actual->sig;
+            }
+                actual=actual->sig;
+                free(tmp);
+            }else{
+                anterior=actual;
+                actual=actual->sig;
+            }         
+    }
     return cabeza;
 }
 
