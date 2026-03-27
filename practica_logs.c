@@ -212,8 +212,8 @@ ErrorLog *conservar_mayor_no_critico(ErrorLog *cabeza)
             if(mayor==NULL || actual->prioridad > mayor->prioridad)
                 mayor=actual;
         }
-    }
         actual=actual->sig;
+    }
     //Eliminación de los demás no criticos
     actual=cabeza;
     ErrorLog *anterior = NULL;
