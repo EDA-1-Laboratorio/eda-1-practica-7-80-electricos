@@ -10,8 +10,8 @@
 #define SOLDADOS_INICIAL 500
 #define SOLDADOS_MIN 50       /* Umbral para ser consumida por el desierto */
 #define DANIO_PORCENTAJE 20   /* Porcentaje de soldados devorados */
-#define ESPECIA_COSECHA 10    /* Especia ganada por turno (si no fue atacada) */
-#define ESPECIA_REFUERZOS 200 /* Especia para llamar refuerzos */
+#define ESPECIA_COSECHA 7    /* Especia ganada por turno (si no fue atacada) */
+#define ESPECIA_REFUERZOS 350 /* Especia para llamar refuerzos */
 
 typedef struct casa {
     char nombre[MAX_NOMBRE];
