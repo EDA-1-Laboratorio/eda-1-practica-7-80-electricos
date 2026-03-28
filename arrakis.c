@@ -24,6 +24,9 @@
  *   ./arrakis
  */
 
+
+//***IMPORTANTE: SE MODIFICO ARRAKIS.H PARA EQUILIBRAR MAS EL JUEGO Y QUE NO SE HAGA INFINITO****
+
 #include "arrakis.h"
 
 /* =====================================================================
@@ -119,7 +122,17 @@ int contar_casas(Casa *cualquiera)
  */
 void insertar_casa(Casa **anillo, Casa *nueva)
 {
-    /* ESCRIBE TU CODIGO AQUI */
+    if (*anillo == NULL) {
+        nueva->siguiente = nueva;
+        *anillo = nueva;
+    } else {
+        Casa *ultimo = *anillo;
+        while (ultimo->siguiente != *anillo) {
+            ultimo = ultimo->siguiente;
+        }
+        ultimo->siguiente = nueva;
+        nueva->siguiente = *anillo;
+    }
 }
 
 /*
@@ -133,8 +146,11 @@ void insertar_casa(Casa **anillo, Casa *nueva)
  */
 Casa *avanzar_gusano(Casa *actual, int pasos)
 {
-    /* ESCRIBE TU CODIGO AQUI */
-    return actual;
+    Casa *temp = actual;
+    for (int i = 0; i < pasos; i++) {
+        temp = temp->siguiente;
+    }
+    return temp;
 }
 
 /*
@@ -156,10 +172,62 @@ Casa *avanzar_gusano(Casa *actual, int pasos)
  */
 int atacar_asentamiento(Casa **gusano, Casa **anillo)
 {
-    /* ESCRIBE TU CODIGO AQUI */
+    if (*anillo == NULL || *gusano == NULL) return 0;
+    
+    Casa *casa_atacada = *gusano;
+    
+    /* 1. PRIMERO: Dar +10 de especia a TODAS las casas */
+    Casa *p = *anillo;
+    do {
+        p->especia += ESPECIA_COSECHA;
+        p = p->siguiente;
+    } while (p != *anillo);
+    
+    /* 2. LUEGO: Reducir el 20% de los soldados de la casa atacada */
+    casa_atacada->soldados = casa_atacada->soldados - (casa_atacada->soldados * 20 / 100);
+    
+    /* 3. Restar la especia que le tocaba a la casa atacada*/
+
+    casa_atacada->especia -= ESPECIA_COSECHA;
+    
+    /* 4. Verificar si la casa es consumida */
+    if (casa_atacada->soldados < SOLDADOS_MIN) {
+        /* Caso especial: solo una casa en el anillo */
+        if (casa_atacada->siguiente == casa_atacada) {
+            free(casa_atacada);
+            *anillo = NULL;
+            *gusano = NULL;
+            return 1;
+        }
+        
+        /* Encontrar el nodo anterior */
+        Casa *anterior = *anillo;
+        while (anterior->siguiente != casa_atacada) {
+            anterior = anterior->siguiente;
+        }
+        
+        /* Guardar el siguiente antes de modificar */
+        Casa *siguiente = casa_atacada->siguiente;
+        
+        /* Reconectar: el anterior apunta al siguiente del eliminado */
+        anterior->siguiente = siguiente;
+        
+        /* Si el nodo eliminado era el anillo, actualizar anillo */
+        if (casa_atacada == *anillo) {
+            *anillo = siguiente;
+        }
+        
+        /* Mover el gusano al siguiente nodo */
+        *gusano = siguiente;
+        
+        /* Liberar el nodo eliminado */
+        free(casa_atacada);
+        
+        return 1;
+    }
+    
     return 0;
 }
-
 /*
  * TODO (Boss Final): Implementar invocar_refuerzos
  *
@@ -174,7 +242,30 @@ int atacar_asentamiento(Casa **gusano, Casa **anillo)
  */
 int invocar_refuerzos(Casa *actual, Casa **anillo)
 {
-    /* ESCRIBE TU CODIGO AQUI */
+    if (actual->especia >= ESPECIA_REFUERZOS) {
+        /* Crear nombre nuevo */
+        char nuevo_nombre[MAX_NOMBRE];
+        snprintf(nuevo_nombre, MAX_NOMBRE, "%s II", actual->nombre);
+        
+        /* Crear nuevo nodo */
+        Casa *nuevo = crear_casa(nuevo_nombre, 250);
+        
+        /* Encontrar el nodo anterior a 'actual' */
+        Casa *anterior = *anillo;
+        while (anterior->siguiente != actual) {
+            anterior = anterior->siguiente;
+        }
+        
+        /* Insertar nuevo nodo justo antes de 'actual' */
+        anterior->siguiente = nuevo;
+        nuevo->siguiente = actual;
+        
+        /* Resetear la especia de la casa que invoco los refuerzos */
+        actual->especia = 0;
+        
+        return 1;
+    }
+    
     return 0;
 }
 
@@ -188,7 +279,7 @@ int main(void)
     Casa *gusano = NULL;
     int turno = 0;
     int dado;
-    int max_turnos = 30;
+    int max_turnos = 100;
 
     srand((unsigned)time(NULL));
 
